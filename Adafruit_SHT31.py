@@ -33,9 +33,16 @@ SHT31_I2CADDR = 0x44
 SHT31_MEAS_HIGHREP_STRETCH = 0x2C06
 SHT31_MEAS_MEDREP_STRETCH = 0x2C0D
 SHT31_MEAS_LOWREP_STRETCH = 0x2C10
-SHT31_MEAS_HIGHREP = 0x2400
-SHT31_MEAS_MEDREP = 0x240B
-SHT31_MEAS_LOWREP = 0x2416
+SHT31_MEAS_HIGHREP = 0x2400 # 12.5 - 15 ms
+SHT31_MEAS_MEDREP = 0x240B  # 4.5 - 6 ms
+SHT31_MEAS_LOWREP = 0x2416 # 2.5 - 4 ms
+
+# High sample rate commands:
+SHT31_MEAS_HIGHREP_10MPS = 0x2737# 12.5 - 15 ms
+SHT31_MEAS_MEDREP_10MPS = 0x2721 # 4.5 - 6 ms
+SHT31_MEAS_LOWHREP_10MPS = 0x272A# 2.5 - 4 ms
+
+
 SHT31_READSTATUS = 0xF32D
 SHT31_CLEARSTATUS = 0x3041
 SHT31_SOFTRESET = 0x30A2
@@ -111,8 +118,8 @@ class SHT31(object):
     """
     Request a  readout, we can obtain the result later
     """
-    def request_readout(self):
-        self._writeCommand(SHT31_MEAS_HIGHREP)
+    def request_readout(self, measurement_cmd = SHT31_MEAS_HIGHREP):
+        self._writeCommand(measurement_cmd)
         self.pending_readout = True
 
     def read_temperature_humidity(self):
@@ -121,7 +128,7 @@ class SHT31(object):
             time.sleep(0.015)
         self.pending_readout=False
         buffer = self._device.readList(0, 6)
-        
+
         if buffer[2] != self._crc8(buffer[0:2]):
             return (float("nan"), float("nan"))
 
