@@ -59,6 +59,8 @@ class SHT31(object):
             import Adafruit_GPIO.I2C as I2C
             i2c = I2C
         self._device = i2c.get_i2c_device(address, **kwargs)
+        # if the SHT31 is taking a measurement
+        self.pending_readout = False
         time.sleep(0.05)  # Wait the required time
 
     def _writeCommand(self, cmd):
@@ -106,9 +108,18 @@ class SHT31(object):
         else:
             self._writeCommand(SHT31_HEATER_OFF)
 
-    def read_temperature_humidity(self):
+    """
+    Request a  readout, we can obtain the result later
+    """
+    def request_readout(self):
         self._writeCommand(SHT31_MEAS_HIGHREP)
-        time.sleep(0.015)
+        self.pending_readout = True
+
+    def read_temperature_humidity(self):
+        if not self.pending_readout:
+            self._writeCommand(SHT31_MEAS_HIGHREP)
+            time.sleep(0.015)
+        self.pending_readout=False
         buffer = self._device.readList(0, 6)
         
         if buffer[2] != self._crc8(buffer[0:2]):
@@ -138,7 +149,7 @@ class SHT31(object):
 
         polynomial = 0x31;
         crc = 0xFF;
-  
+
         index = 0
         for index in range(0, len(buffer)):
             crc ^= buffer[index]
