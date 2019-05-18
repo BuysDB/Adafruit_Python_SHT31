@@ -118,7 +118,7 @@ class SHT31(object):
     """
     Request a  readout, we can obtain the result later
     """
-    def request_readout(self, measurement_cmd = SHT31_MEAS_HIGHREP):
+    def request_readout(self, measurement_cmd = SHT31_MEAS_HIGHREP_10MPS):
         self._writeCommand(measurement_cmd)
         self.pending_readout = True
 
